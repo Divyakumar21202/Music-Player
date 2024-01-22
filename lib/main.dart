@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/Screens/home_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:music_player/Screens/song_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -15,11 +16,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'My Music App',
-      theme: ThemeData.dark(
-        
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
+      theme: ThemeData.dark(),
+      home: const SongScreen(),
     );
   }
 }
