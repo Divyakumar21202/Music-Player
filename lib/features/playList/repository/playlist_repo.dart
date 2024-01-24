@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 final playListProvider = Provider(
   (ref) => PlayList(
-    url: 'http://172.22.2.203:3000/get-buffer?number=50',
+    url: 'https://tunescape-mono-backend.onrender.com/get-buffer?number=50',
   ),
 );
 
@@ -18,16 +18,12 @@ class PlayList {
 
   Future<List<SongModel>> getJson() async {
     List<SongModel> songList = [];
-    print('getJson is called');
     try {
-      print('try block');
       var res = await http.get(
         Uri.parse(
-          'http://172.22.2.203:3000/get-buffer?number=50',
+          url,
         ),
       );
-      print('this is the status code : \n\n');
-      print(res.statusCode);
       if (res.statusCode == 200) {
         List<dynamic> jsonData = json.decode(res.body);
         for (var item in jsonData) {
@@ -47,13 +43,11 @@ class PlayList {
               uploadedby: uploadedBy,
             ),
           );
-          print('Title: $title, Artist: $coverUrl\n\n');
         }
 
         return songList;
       }
     } catch (e) {
-      print('this is the error:\n\n');
       print(e.toString());
     }
     return songList;

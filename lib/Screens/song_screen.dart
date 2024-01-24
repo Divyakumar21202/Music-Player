@@ -5,9 +5,14 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:music_player/constants/colors.dart';
 import 'package:music_player/constants/widgets/bottom_nav_bar.dart';
+import 'package:music_player/features/playList/repository/playlist_repo.dart';
+import 'package:music_player/models/song_model.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SongScreen extends StatefulWidget {
   String url;
@@ -48,7 +53,6 @@ class _SongScreenState extends State<SongScreen> {
 
   bool isPlay = false;
   Future initPlayer() async {
-    print('init state  is called');
     audioPlayer = AudioPlayer();
     audioSource = UrlSource(widget.url);
     await audioPlayer.setSource(audioSource);
@@ -83,7 +87,7 @@ class _SongScreenState extends State<SongScreen> {
       backgroundColor: primaryBackground,
       bottomNavigationBar: const BottomNavBar(),
       appBar: AppBar(
-        title: const Text('Best Songs Ever'),
+        title: const Text('Tunescape'),
         centerTitle: true,
         backgroundColor: transparent,
         actions: [
@@ -104,30 +108,89 @@ class _SongScreenState extends State<SongScreen> {
               child: Column(
                 children: [
                   const Spacer(),
-                  CarouselSlider(
-                    items: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.amberAccent,
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: NetworkImage(
-                              widget.imgUrl,
+                  Consumer(builder: (context, ref, child) {
+                    return FutureBuilder(
+                        future: ref.watch(playListProvider).getJson(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey.shade400,
+                              highlightColor: Colors.grey.shade200,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey,
+                                  borderRadius: BorderRadius.circular(
+                                    14,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return CarouselSlider(
+                            items: [
+                              FutureBuilder(
+                                  future: ref.watch(playListProvider).getJson(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return Shimmer.fromColors(
+                                        baseColor: Colors.grey.shade400,
+                                        highlightColor: Colors.grey.shade200,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.blueGrey,
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    if (snapshot.hasError) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          image: const DecorationImage(
+                                            fit: BoxFit.cover,
+                                            image: AssetImage(
+                                              'assets/images/error.jpg',
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    // List<SongModel> songList = snapshot.data!;
+                                    // return ListView.builder(
+                                    //     itemCount: songList.length,
+                                    //     itemBuilder: (context, index) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: NetworkImage(
+                                            'https://d1dgwvpmn80wva.cloudfront.net/faa52c7366ef11332a8b8a5700b46518',
+                                          ),
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          14,
+                                        ),
+                                      ),
+                                    );
+                                    // });
+                                  }),
+                            ],
+                            options: CarouselOptions(
+                              autoPlay: false,
+                              enlargeCenterPage: true,
+                              viewportFraction: 0.5,
+                              initialPage: 0,
                             ),
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            14,
-                          ),
-                        ),
-                      ),
-                    ],
-                    options: CarouselOptions(
-                      autoPlay: false,
-                      enlargeCenterPage: true,
-                      viewportFraction: 0.5,
-                      initialPage: 3,
-                    ),
-                  ),
+                          );
+                        });
+                  }),
                   const SizedBox(
                     height: 50,
                   ),
@@ -136,7 +199,7 @@ class _SongScreenState extends State<SongScreen> {
                     children: [
                       Text(
                         widget.title,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 28, fontWeight: FontWeight.w600),
                       ),
                     ],
