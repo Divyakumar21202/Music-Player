@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:music_player/Screens/song_screen.dart';
 import 'package:music_player/constants/colors.dart';
 import 'package:music_player/features/playList/repository/playlist_repo.dart';
 import 'package:music_player/models/song_model.dart';
-import 'package:http/http.dart' as http;
 
 class PlaylistScreen extends StatelessWidget {
   const PlaylistScreen({super.key});
@@ -19,23 +19,18 @@ class PlayListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    String url =
-        'https://d1dgwvpmn80wva.cloudfront.net/faa52c7366ef11332a8b8a5700b46518';
+    // String url =
+    //     'https://d1dgwvpmn80wva.cloudfront.net/faa52c7366ef11332a8b8a5700b46518';
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: FutureBuilder(
-              future: ref.watch(PlayListProvider).getSongList(),
+              future: ref.watch(playListProvider).getJson(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
                     child: TextButton(
-                      onPressed: () async {
-                        http.Response res = await http.get(Uri.parse(
-                            'http://172.22.2.203:3000/get-buffer?number=50',),);
-                        print(res.statusCode);
-                        print(res.body.length);
-                      },
+                      onPressed: () {},
                       child: const Text(
                         'Loading...',
                         style: TextStyle(
@@ -57,45 +52,61 @@ class PlayListScreen extends ConsumerWidget {
                       itemCount: list.length,
                       itemBuilder: (context, index) {
                         SongModel model = list[index];
-                        return Container(
-                          margin: const EdgeInsets.only(
-                            right: 12,
-                          ),
-                          height: 175,
-                          width: 121,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                height: 121,
-                                width: 121,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: NetworkImage(model.coverUrl),
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => SongScreen(
+                                  imgUrl: model.coverUrl,
+                                  url: model.songUrl,
+                                  artist: model.description,
+                                  title: model.title,
+                                  uploadedby: model.description,
                                 ),
                               ),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Text(
-                                model.title,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(
-                                height: 2,
-                              ),
-                              Text(
-                                model.description,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 11, color: Colors.grey),
-                              ),
-                            ],
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              right: 12,
+                            ),
+                            height: 175,
+                            width: 121,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 121,
+                                  width: 121,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage(model.coverUrl),
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                Text(
+                                  model.title,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(
+                                  height: 2,
+                                ),
+                                Text(
+                                  model.description,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 11, color: Colors.grey),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       }),

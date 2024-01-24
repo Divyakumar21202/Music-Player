@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_player/models/song_model.dart';
 import 'package:http/http.dart' as http;
 
-final PlayListProvider = Provider(
+final playListProvider = Provider(
   (ref) => PlayList(
     url: 'http://172.22.2.203:3000/get-buffer?number=50',
   ),
@@ -14,72 +16,46 @@ class PlayList {
     required this.url,
   });
 
-  Future<List<SongModel>> getSongList() async {
-    List<SongModel> list = [];
+  Future<List<SongModel>> getJson() async {
+    List<SongModel> songList = [];
+    print('getJson is called');
     try {
-      var response = await http.get(Uri.parse(url));
-      print('\n\n\n\n\n\n\n\n\n');
-      print(response.body);
-      print(response.statusCode);
-      print('\n\n\n\n\n\n\n\n\n');
-      if (response.statusCode == 200) {
-        List<int> objList = response.body.codeUnits;
-        int i = 0;
-        while (i <= objList.length) {
-          SongModel model = SongModel(
-            title: 'Khulke Jeene Ka',
-            description: 'Arijit Singh ,Shasha Tirupati',
-            songUrl:
-                'https://d1dgwvpmn80wva.cloudfront.net/ebd7390156efc7b13eeb4b2d745f3612',
-            coverUrl:
-                'https://d1dgwvpmn80wva.cloudfront.net/faa52c7366ef11332a8b8a5700b46518',
+      print('try block');
+      var res = await http.get(
+        Uri.parse(
+          'http://172.22.2.203:3000/get-buffer?number=50',
+        ),
+      );
+      print('this is the status code : \n\n');
+      print(res.statusCode);
+      if (res.statusCode == 200) {
+        List<dynamic> jsonData = json.decode(res.body);
+        for (var item in jsonData) {
+          String title = item['title'];
+          String artist = item['artist'];
+          String uploadedBy = item['uploadedBy'];
+          String songUrl =
+              'https://d1dgwvpmn80wva.cloudfront.net/${item['musicHash']}';
+          String coverUrl =
+              'https://d1dgwvpmn80wva.cloudfront.net/${item['thumbnailHash']}';
+          songList.add(
+            SongModel(
+              title: title,
+              description: artist,
+              songUrl: songUrl,
+              coverUrl: coverUrl,
+              uploadedby: uploadedBy,
+            ),
           );
-          list.add(model);
+          print('Title: $title, Artist: $coverUrl\n\n');
         }
+
+        return songList;
       }
-      return list;
     } catch (e) {
-      throw (e.toString());
+      print('this is the error:\n\n');
+      print(e.toString());
     }
+    return songList;
   }
 }
-
-/*
-
-_id
-:
-"64ff48f6e3ac3b465a8532cc"
-title
-:
-"Khulke Jeene Ka"
-artist
-:
-"Arijit Singh ,Shasha Tirupati"
-musicHash
-:
-"ebd7390156efc7b13eeb4b2d745f3612"
-thumbnailHash
-:
-"faa52c7366ef11332a8b8a5700b46518"
-uploadedBy
-:
-"Soubhik Gon"
-uid
-:
-"jP6dXeXeocdqdWFeAUaFLsEWEPa2"
-plays
-:
-0
-likedBy
-:
-[]
-duration
-:
-"3:25"
-createdAt
-:
-"2023-09-11T17:05:58.949Z"
-updatedAt
-:
-"2023-09-11T17:05:58.949Z"
-*/

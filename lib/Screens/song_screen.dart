@@ -1,14 +1,28 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+
 import 'package:music_player/constants/colors.dart';
 import 'package:music_player/constants/widgets/bottom_nav_bar.dart';
 
 class SongScreen extends StatefulWidget {
-  const SongScreen({super.key});
+  String url;
+  String imgUrl;
+  String title;
+  String uploadedby;
+  String artist;
+  SongScreen({
+    Key? key,
+    required this.url,
+    required this.artist,
+    required this.imgUrl,
+    required this.title,
+    required this.uploadedby,
+  }) : super(key: key);
 
   @override
   State<SongScreen> createState() => _SongScreenState();
@@ -26,11 +40,17 @@ class _SongScreenState extends State<SongScreen> {
     initPlayer();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    audioPlayer.dispose();
+  }
+
   bool isPlay = false;
   Future initPlayer() async {
     print('init state  is called');
     audioPlayer = AudioPlayer();
-    audioSource = UrlSource(url);
+    audioSource = UrlSource(widget.url);
     await audioPlayer.setSource(audioSource);
     audioPlayer.getDuration().then((value) {
       if (value != null) {
@@ -56,10 +76,6 @@ class _SongScreenState extends State<SongScreen> {
   }
 
   int index = 0;
-  String url =
-      'https://d1dgwvpmn80wva.cloudfront.net/e8a20ab51a6124da899acdf35bfdc74b';
-  String imgUrl =
-      'https://img.freepik.com/free-vector/music-festival-concert-background-with-golden-musical-notes_1017-20757.jpg?size=626&ext=jpg&uid=R107090669&ga=GA1.1.1948187877.1675699674&semt=sph';
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +112,7 @@ class _SongScreenState extends State<SongScreen> {
                           image: DecorationImage(
                             fit: BoxFit.cover,
                             image: NetworkImage(
-                              imgUrl,
+                              widget.imgUrl,
                             ),
                           ),
                           borderRadius: BorderRadius.circular(
@@ -115,31 +131,41 @@ class _SongScreenState extends State<SongScreen> {
                   const SizedBox(
                     height: 50,
                   ),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Rowdy Jessy',
+                        widget.title,
                         style: TextStyle(
                             fontSize: 28, fontWeight: FontWeight.w600),
                       ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       Text(
-                        '- ShoGon',
-                        style: TextStyle(
-                            fontSize: 28, fontWeight: FontWeight.w600),
+                        widget.artist,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(
                     height: 12,
                   ),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '- ShoGon',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
+                        widget.uploadedby,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            overflow: TextOverflow.ellipsis),
                       ),
                     ],
                   ),
@@ -194,31 +220,33 @@ class _SongScreenState extends State<SongScreen> {
             height: 30,
           ),
           Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: StreamBuilder(
-                  stream: audioPlayer.onPositionChanged,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return ProgressBar(
-                        progress: progress,
-                        total: total,
-                      );
-                    }
-                    progress = Duration(seconds: snapshot.data!.inSeconds);
-                    return ProgressBar(
-                      onSeek: (value) {
-                        audioPlayer.seek(value);
-                        setState(() {});
-                      },
-                      progressBarColor: progressBarColor,
-                      buffered: const Duration(
-                        seconds: 0,
-                      ),
-                      bufferedBarColor: Colors.grey,
-                      progress: progress,
-                      total: total,
-                    );
-                  })),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: StreamBuilder(
+              stream: audioPlayer.onPositionChanged,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return ProgressBar(
+                    progress: progress,
+                    total: total,
+                  );
+                }
+                progress = Duration(seconds: snapshot.data!.inSeconds);
+                return ProgressBar(
+                  onSeek: (value) {
+                    audioPlayer.seek(value);
+                    setState(() {});
+                  },
+                  progressBarColor: progressBarColor,
+                  buffered: const Duration(
+                    seconds: 0,
+                  ),
+                  bufferedBarColor: Colors.grey,
+                  progress: progress,
+                  total: total,
+                );
+              },
+            ),
+          ),
           const SizedBox(
             height: 30,
           ),
