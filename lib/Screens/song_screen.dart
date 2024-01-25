@@ -14,7 +14,7 @@ import 'package:music_player/features/playList/repository/playlist_repo.dart';
 import 'package:music_player/models/song_model.dart';
 import 'package:shimmer/shimmer.dart';
 
-class SongScreen extends StatefulWidget {
+class SongScreen extends ConsumerStatefulWidget {
   String url;
   String imgUrl;
   String title;
@@ -30,18 +30,21 @@ class SongScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<SongScreen> createState() => _SongScreenState();
+  ConsumerState<SongScreen> createState() => _SongScreenState();
 }
 
-class _SongScreenState extends State<SongScreen> {
+class _SongScreenState extends ConsumerState<SongScreen> {
   late final AudioPlayer audioPlayer;
   late final Source audioSource;
   Duration total = Duration.zero;
   Duration progress = Duration.zero;
+  String thisUrl = '';
+  List<RotationSong> rotationSong = [];
 
   @override
   void initState() {
     super.initState();
+    thisUrl = widget.url;
     initPlayer();
   }
 
@@ -54,7 +57,7 @@ class _SongScreenState extends State<SongScreen> {
   bool isPlay = false;
   Future initPlayer() async {
     audioPlayer = AudioPlayer();
-    audioSource = UrlSource(widget.url);
+    audioSource = UrlSource(thisUrl);
     await audioPlayer.setSource(audioSource);
     audioPlayer.getDuration().then((value) {
       if (value != null) {
@@ -71,15 +74,17 @@ class _SongScreenState extends State<SongScreen> {
     if (isPlay) {
       audioPlayer.pause();
       isPlay = false;
-      setState(() {});
     } else {
       audioPlayer.play(audioSource);
       isPlay = true;
-      setState(() {});
     }
   }
 
   int index = 0;
+  Future getRSongs() async {
+    rotationSong = await ref.watch(playListProvider).getRotationList();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,79 +115,55 @@ class _SongScreenState extends State<SongScreen> {
                   const Spacer(),
                   Consumer(builder: (context, ref, child) {
                     return FutureBuilder(
-                        future: ref.watch(playListProvider).getJson(),
+                        future: ref.watch(playListProvider).getRotationList(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return Shimmer.fromColors(
-                              baseColor: Colors.grey.shade400,
-                              highlightColor: Colors.grey.shade200,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.blueGrey,
-                                  borderRadius: BorderRadius.circular(
-                                    14,
-                                  ),
-                                ),
+                            return CarouselSlider(
+                              options: CarouselOptions(
+                                autoPlay: false,
+                                enlargeCenterPage: true,
+                                viewportFraction: 0.5,
+                                initialPage: 0,
                               ),
-                            );
-                          }
-                          return CarouselSlider(
-                            items: [
-                              FutureBuilder(
-                                  future: ref.watch(playListProvider).getJson(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return Shimmer.fromColors(
-                                        baseColor: Colors.grey.shade400,
-                                        highlightColor: Colors.grey.shade200,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.blueGrey,
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    if (snapshot.hasError) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          image: const DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: AssetImage(
-                                              'assets/images/error.jpg',
-                                            ),
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    // List<SongModel> songList = snapshot.data!;
-                                    // return ListView.builder(
-                                    //     itemCount: songList.length,
-                                    //     itemBuilder: (context, index) {
-                                    return Container(
+                              items: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                      14,
+                                    ),
+                                  ),
+                                  child: Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade400,
+                                    highlightColor: Colors.grey.shade200,
+                                    child: Container(
                                       decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          fit: BoxFit.cover,
-                                          image: NetworkImage(
-                                            'https://d1dgwvpmn80wva.cloudfront.net/faa52c7366ef11332a8b8a5700b46518',
-                                          ),
-                                        ),
+                                        color: Colors.blueGrey,
                                         borderRadius: BorderRadius.circular(
                                           14,
                                         ),
                                       ),
-                                    );
-                                    // });
-                                  }),
-                            ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                          List<RotationSong> listRotationSong = snapshot.data!;
+                          return CarouselSlider(
+                            items: listRotationSong,
                             options: CarouselOptions(
+                              onPageChanged: (val, CarouselPageChangedReason) {
+                                thisUrl = listRotationSong[val].model.songUrl;
+                                print(thisUrl);
+                                audioPlayer.pause();
+                                audioPlayer.play(
+                                  UrlSource(
+                                    thisUrl,
+                                  ),
+                                );
+                                isPlay = true;
+                              },
                               autoPlay: false,
                               enlargeCenterPage: true,
                               viewportFraction: 0.5,
@@ -191,48 +172,6 @@ class _SongScreenState extends State<SongScreen> {
                           );
                         });
                   }),
-                  const SizedBox(
-                    height: 50,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.title,
-                        style: const TextStyle(
-                            fontSize: 28, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.artist,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 12,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.uploadedby,
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            overflow: TextOverflow.ellipsis),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
                 ],
               ),
             ),
@@ -318,3 +257,208 @@ class _SongScreenState extends State<SongScreen> {
     );
   }
 }
+
+class RotationSong extends StatelessWidget {
+  final SongModel model;
+  const RotationSong({super.key, required this.model});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          fit: BoxFit.cover,
+          image: NetworkImage(
+            model.coverUrl,
+          ),
+        ),
+        borderRadius: BorderRadius.circular(
+          14,
+        ),
+      ),
+    );
+  }
+}
+/*
+ FutureBuilder(
+                        future: ref.watch(playListProvider).getJson(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey.shade400,
+                              highlightColor: Colors.grey.shade200,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey,
+                                  borderRadius: BorderRadius.circular(
+                                    14,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return CarouselSlider(
+                            items: [
+                              FutureBuilder(
+                                  future: ref.watch(playListProvider).getJson(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return Shimmer.fromColors(
+                                        baseColor: Colors.grey.shade400,
+                                        highlightColor: Colors.grey.shade200,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.blueGrey,
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    if (snapshot.hasError) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          image: const DecorationImage(
+                                            fit: BoxFit.cover,
+                                            image: AssetImage(
+                                              'assets/images/error.jpg',
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    // List<SongModel> songList = snapshot.data!;
+                                    // return ListView.builder(
+                                    //     itemCount: songList.length,
+                                    //     itemBuilder: (context, index) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: NetworkImage(
+                                            'https://d1dgwvpmn80wva.cloudfront.net/faa52c7366ef11332a8b8a5700b46518',
+                                          ),
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          14,
+                                        ),
+                                      ),
+                                    );
+                                    // });
+                                  }),
+                            ],
+                            options: CarouselOptions(
+                              autoPlay: false,
+                              enlargeCenterPage: true,
+                              viewportFraction: 0.5,
+                              initialPage: 0,
+                            ),
+                          );
+                        });
+                 
+*/
+
+
+/*
+FutureBuilder(
+                        future: ref.watch(playListProvider).getJson(),
+                        builder: (context, snapshot) {
+                          if (ConnectionState.waiting ==
+                              snapshot.connectionState) {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey.shade400,
+                              highlightColor: Colors.grey.shade200,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey,
+                                  borderRadius: BorderRadius.circular(
+                                    14,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          image: const DecorationImage(
+                                            fit: BoxFit.cover,
+                                            image: AssetImage(
+                                              'assets/images/error.jpg',
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                          
+                          List<SongModel> songList = snapshot.data!;
+                          List<RotationSong> rotateList = [];
+                          for (var model in songList) {
+                            rotateList.add(RotationSong(model: model));
+                          }
+                          return CarouselSlider(
+                            items: rotateList,
+                            options: CarouselOptions(
+                              autoPlay: false,
+                              enlargeCenterPage: true,
+                              viewportFraction: 0.5,
+                              initialPage: 0,
+                            ),
+                          );
+                        });
+                 */
+
+
+                /* const SizedBox(
+                    height: 50,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.artist,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.uploadedby,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                    ],
+                  ),
+                  const Spacer(), */
