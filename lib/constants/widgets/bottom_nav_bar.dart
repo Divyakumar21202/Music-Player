@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:music_player/constants/colors.dart';
 
 class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+  final ValueChanged<int> onChangeBottom;
+  const BottomNavBar({super.key, required this.onChangeBottom});
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
@@ -20,8 +21,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       unselectedItemColor: Colors.white,
       currentIndex: index,
       onTap: (val) {
-        index = val;
-        setState(() {});
+        widget.onChangeBottom(val);
       },
       items: const [
         BottomNavigationBarItem(
