@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:music_player/sampleScreen.dart';
+import 'package:music_player/Screens/playlist_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'My Music App',
       theme: ThemeData.dark(),
-      home: const MyWidget(),
+      home: const PlayListScreen(),
     );
   }
 }

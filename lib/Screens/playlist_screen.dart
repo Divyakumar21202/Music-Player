@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_player/Screens/song_screen.dart';
 import 'package:music_player/constants/colors.dart';
+import 'package:music_player/features/music%20Play/repository/music_play_repository.dart';
 import 'package:music_player/features/playList/repository/playlist_repo.dart';
 import 'package:music_player/models/song_model.dart';
+import 'package:music_player/song_list_repo.dart';
 
 class PlaylistScreen extends StatelessWidget {
   const PlaylistScreen({super.key});
@@ -19,8 +21,6 @@ class PlayListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // String url =
-    //     'https://d1dgwvpmn80wva.cloudfront.net/faa52c7366ef11332a8b8a5700b46518';
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -44,6 +44,7 @@ class PlayListScreen extends ConsumerWidget {
                 List<SongModel> list = [];
                 if (snapshot.data != null) {
                   list = snapshot.data!;
+                  // ref.read(audioPlayerProvider.notifier).updateSongList(list);
                 }
                 return Container(
                   padding: const EdgeInsets.only(top: 20, left: 20),
@@ -54,16 +55,26 @@ class PlayListScreen extends ConsumerWidget {
                         SongModel model = list[index];
                         return GestureDetector(
                           onTap: () {
+                            ref.watch(audioPlayerProvider.notifier).changeSong(
+                                  imageUrl: model.coverUrl,
+                                  url: model.songUrl,
+                                  artist: model.description,
+                                  title: model.title,
+                                  uploadedBy: model.description,
+                                );
+                            ref
+                                .watch(audioPlayerProvider.notifier)
+                                .updateSongList(list);
                             Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => SongScreen(
+                              MaterialPageRoute(builder: (context) {
+                                return SongScreen(
                                   imgUrl: model.coverUrl,
                                   url: model.songUrl,
                                   artist: model.description,
                                   title: model.title,
                                   uploadedby: model.description,
-                                ),
-                              ),
+                                );
+                              }),
                             );
                           },
                           child: Container(

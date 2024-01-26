@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:async';
-
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -10,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:music_player/constants/colors.dart';
 import 'package:music_player/constants/widgets/bottom_nav_bar.dart';
+import 'package:music_player/features/music%20Play/repository/music_play_repository.dart';
 import 'package:music_player/features/playList/repository/playlist_repo.dart';
 import 'package:music_player/models/song_model.dart';
 import 'package:shimmer/shimmer.dart';
@@ -34,60 +32,61 @@ class SongScreen extends ConsumerStatefulWidget {
 }
 
 class _SongScreenState extends ConsumerState<SongScreen> {
-  late final AudioPlayer audioPlayer;
-  late final Source audioSource;
-  Duration total = Duration.zero;
-  Duration progress = Duration.zero;
-  String thisUrl = '';
-  List<RotationSong> rotationSong = [];
+  // late final AudioPlayer audioPlayer;
+  // late final Source audioSource;
+  // Duration total = Duration.zero;
+  // Duration progress = Duration.zero;
+  // String thisUrl = '';
+  // List<RotationSong> rotationSong = [];
 
-  @override
-  void initState() {
-    super.initState();
-    thisUrl = widget.url;
-    initPlayer();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   thisUrl = widget.url;
+  //   initPlayer();
+  // }
 
-  @override
-  void dispose() {
-    super.dispose();
-    audioPlayer.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   audioPlayer.dispose();
+  // }
 
-  bool isPlay = false;
-  Future initPlayer() async {
-    audioPlayer = AudioPlayer();
-    audioSource = UrlSource(thisUrl);
-    await audioPlayer.setSource(audioSource);
-    audioPlayer.getDuration().then((value) {
-      if (value != null) {
-        setState(() {
-          total = value;
-        });
-        return value;
-      }
-      return const Duration(seconds: 0);
-    });
-  }
+  // bool isPlay = false;
+  // Future initPlayer() async {
+  //   audioPlayer = AudioPlayer();
+  //   audioSource = UrlSource(thisUrl);
+  //   await audioPlayer.setSource(audioSource);
+  //   audioPlayer.getDuration().then((value) {
+  //     if (value != null) {
+  //       setState(() {
+  //         total = value;
+  //       });
+  //       return value;
+  //     }
+  //     return const Duration(seconds: 0);
+  //   });
+  // }
 
-  void playPause() {
-    if (isPlay) {
-      audioPlayer.pause();
-      isPlay = false;
-    } else {
-      audioPlayer.play(audioSource);
-      isPlay = true;
-    }
-  }
+  // void playPause() {
+  //   if (isPlay) {
+  //     audioPlayer.pause();
+  //     isPlay = false;
+  //   } else {
+  //     audioPlayer.play(audioSource);
+  //     isPlay = true;
+  //   }
+  // }
 
-  int index = 0;
-  Future getRSongs() async {
-    rotationSong = await ref.watch(playListProvider).getRotationList();
-    setState(() {});
-  }
+  // int index = 0;
+  // Future getRSongs() async {
+  //   rotationSong = await ref.watch(playListProvider).getRotationList();
+  //   setState(() {});
+  // }
 
   @override
   Widget build(BuildContext context) {
+    final audio = ref.watch(audioPlayerProvider);
     return Scaffold(
       backgroundColor: primaryBackground,
       bottomNavigationBar: const BottomNavBar(),
@@ -114,63 +113,69 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 children: [
                   const Spacer(),
                   Consumer(builder: (context, ref, child) {
-                    return FutureBuilder(
-                        future: ref.watch(playListProvider).getRotationList(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return CarouselSlider(
-                              options: CarouselOptions(
-                                autoPlay: false,
-                                enlargeCenterPage: true,
-                                viewportFraction: 0.5,
-                                initialPage: 0,
-                              ),
-                              items: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                      14,
-                                    ),
-                                  ),
-                                  child: Shimmer.fromColors(
-                                    baseColor: Colors.grey.shade400,
-                                    highlightColor: Colors.grey.shade200,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.blueGrey,
-                                        borderRadius: BorderRadius.circular(
-                                          14,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
-                          List<RotationSong> listRotationSong = snapshot.data!;
-                          return CarouselSlider(
-                            items: listRotationSong,
-                            options: CarouselOptions(
-                              onPageChanged: (val, CarouselPageChangedReason) {
-                                thisUrl = listRotationSong[val].model.songUrl;
-                                print(thisUrl);
-                                audioPlayer.pause();
-                                audioPlayer.play(
-                                  UrlSource(
-                                    thisUrl,
-                                  ),
-                                );
-                                isPlay = true;
-                              },
-                              autoPlay: false,
-                              enlargeCenterPage: true,
-                              viewportFraction: 0.5,
-                              initialPage: 0,
-                            ),
-                          );
-                        });
+                    // return FutureBuilder(
+                    //     future: ref.watch(playListProvider).getRotationList(),
+                    //     builder: (context, snapshot) {
+                    //       if (snapshot.connectionState ==
+                    //           ConnectionState.waiting) {
+                    //         return CarouselSlider(
+                    //           options: CarouselOptions(
+                    //             autoPlay: false,
+                    //             enlargeCenterPage: true,
+                    //             viewportFraction: 0.5,
+                    //             initialPage: 0,
+                    //           ),
+                    //           items: [
+                    //             Container(
+                    //               decoration: BoxDecoration(
+                    //                 borderRadius: BorderRadius.circular(
+                    //                   14,
+                    //                 ),
+                    //               ),
+                    //               child: Shimmer.fromColors(
+                    //                 baseColor: Colors.grey.shade400,
+                    //                 highlightColor: Colors.grey.shade200,
+                    //                 child: Container(
+                    //                   decoration: BoxDecoration(
+                    //                     color: Colors.blueGrey,
+                    //                     borderRadius: BorderRadius.circular(
+                    //                       14,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         );
+                    //       }
+                    List<RotationSong> listRotationSong = [];
+                    for (var model in audio.listsongModel) {
+                      listRotationSong.add(
+                        RotationSong(
+                          model: model,
+                        ),
+                      );
+                    }
+                    return CarouselSlider(
+                      items: listRotationSong,
+                      options: CarouselOptions(
+                        onPageChanged: (val, CarouselPageChangedReason) {
+                          // thisUrl = listRotationSong[val].model.songUrl;
+                          // print(thisUrl);
+                          // audioPlayer.pause();
+                          // audioPlayer.play(
+                          //   UrlSource(
+                          //     thisUrl,
+                          //   ),
+                          // );
+                          // isPlay = true;
+                        },
+                        autoPlay: false,
+                        enlargeCenterPage: true,
+                        viewportFraction: 0.5,
+                        initialPage: 0,
+                      ),
+                    );
                   }),
                 ],
               ),
@@ -187,10 +192,10 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 color: buttonColor,
                 iconSize: 50,
               ),
-              isPlay
+              audio.isPlay
                   ? IconButton(
                       onPressed: () {
-                        playPause();
+                        ref.read(audioPlayerProvider.notifier).isPlay();
                       },
                       icon: const Icon(
                         Icons.pause_circle_outline_rounded,
@@ -200,7 +205,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     )
                   : IconButton(
                       onPressed: () {
-                        playPause();
+                        ref.read(audioPlayerProvider.notifier).isPlay();
                       },
                       icon: const Icon(
                         Icons.play_circle_outline_rounded,
@@ -209,7 +214,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       color: playButtonColor,
                     ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  // ref.read(audioPlayerProvider.notifier)
+                },
                 icon: const Icon(
                   Icons.skip_next_rounded,
                 ),
@@ -221,34 +228,59 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           const SizedBox(
             height: 30,
           ),
+
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          //   child: StreamBuilder(
+          //     stream: audioPlayer.onPositionChanged,
+          //     builder: (context, snapshot) {
+          //       if (snapshot.connectionState == ConnectionState.waiting) {
+          //         return ProgressBar(
+          //           progress: progress,
+          //           total: total,
+          //         );
+          //       }
+          //       progress = Duration(seconds: snapshot.data!.inSeconds);
+          //       return ProgressBar(
+          //         onSeek: (value) {
+          //           audioPlayer.seek(value);
+          //           setState(() {});
+          //         },
+          //         progressBarColor: progressBarColor,
+          //         buffered: const Duration(
+          //           seconds: 0,
+          //         ),
+          //         bufferedBarColor: Colors.grey,
+          //         progress: progress,
+          //         total: total,
+          //       );
+          //     },
+          //   ),
+          // ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: StreamBuilder(
-              stream: audioPlayer.onPositionChanged,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                initialData: Duration.zero,
+                stream: ref
+                    .watch(audioPlayerProvider.notifier)
+                    .getCurrentPlayerPosition(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return ProgressBar(
+                      progress: audio.progress,
+                      total: audio.audioDuration,
+                    );
+                  }
                   return ProgressBar(
-                    progress: progress,
-                    total: total,
+                    progress: snapshot.data!,
+                    total: audio.audioDuration,
+                    onSeek: (val) {
+                      ref.read(audioPlayerProvider.notifier).onSeekPlayer(val);
+                    },
                   );
-                }
-                progress = Duration(seconds: snapshot.data!.inSeconds);
-                return ProgressBar(
-                  onSeek: (value) {
-                    audioPlayer.seek(value);
-                    setState(() {});
-                  },
-                  progressBarColor: progressBarColor,
-                  buffered: const Duration(
-                    seconds: 0,
-                  ),
-                  bufferedBarColor: Colors.grey,
-                  progress: progress,
-                  total: total,
-                );
-              },
-            ),
+                }),
           ),
+
           const SizedBox(
             height: 30,
           ),

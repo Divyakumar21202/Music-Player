@@ -31,29 +31,11 @@ class _MyWidgetState extends ConsumerState<MyWidget> {
                   color: buttonColor,
                   iconSize: 50,
                 ),
-                audio.isPlay
-                    ? IconButton(
-                        onPressed: () {
-                          ref.read(audioPlayerProvider.notifier).isPlay();
-                        },
-                        icon: const Icon(
-                          Icons.pause_circle_outline_rounded,
-                        ),
-                        color: pauseButtonColor,
-                        iconSize: 50,
-                      )
-                    : IconButton(
-                        onPressed: () {
-                          ref.read(audioPlayerProvider.notifier).isPlay();
-                        },
-                        icon: const Icon(
-                          Icons.play_circle_outline_rounded,
-                        ),
-                        iconSize: 50,
-                        color: playButtonColor,
-                      ),
+                
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // ref.read(audioPlayerProvider.notifier).changeSong(required);
+                  },
                   icon: const Icon(
                     Icons.skip_next_rounded,
                   ),

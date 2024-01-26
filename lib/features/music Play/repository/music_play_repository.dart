@@ -2,6 +2,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:music_player/models/song_model.dart';
+
 final audioPlayerProvider = StateNotifierProvider<AudioNotifier, MyAudioPalyer>(
     (ref) => AudioNotifier());
 
@@ -11,6 +13,12 @@ class MyAudioPalyer {
   final Source source;
   final Duration audioDuration;
   final Duration progress;
+  final String url;
+  final String imgUrl;
+  final String title;
+  final String uploadedby;
+  final String artist;
+  final List<SongModel> listsongModel;
 
   MyAudioPalyer({
     required this.audioPlayer,
@@ -18,6 +26,12 @@ class MyAudioPalyer {
     required this.source,
     required this.audioDuration,
     required this.progress,
+    required this.url,
+    required this.imgUrl,
+    required this.title,
+    required this.uploadedby,
+    required this.artist,
+    required this.listsongModel,
   });
 
   MyAudioPalyer copyWith({
@@ -26,6 +40,12 @@ class MyAudioPalyer {
     Source? source,
     Duration? audioDuration,
     Duration? progress,
+    String? url,
+    String? imgUrl,
+    String? title,
+    String? uploadedby,
+    String? artist,
+    List<SongModel>? listsongModel,
   }) {
     return MyAudioPalyer(
       audioPlayer: audioPlayer ?? this.audioPlayer,
@@ -33,6 +53,12 @@ class MyAudioPalyer {
       source: source ?? this.source,
       audioDuration: audioDuration ?? this.audioDuration,
       progress: progress ?? this.progress,
+      url: url ?? this.url,
+      imgUrl: imgUrl ?? this.imgUrl,
+      title: title ?? this.title,
+      uploadedby: uploadedby ?? this.uploadedby,
+      artist: artist ?? this.artist,
+      listsongModel: listsongModel ?? this.listsongModel,
     );
   }
 }
@@ -46,6 +72,12 @@ class AudioNotifier extends StateNotifier<MyAudioPalyer> {
             source: AssetSource('music/mmusic.mp3'),
             audioDuration: const Duration(seconds: 0),
             progress: const Duration(seconds: 0),
+            imgUrl: '',
+            url: '',
+            artist: '',
+            title: '',
+            uploadedby: '',
+            listsongModel: [],
           ),
         );
 
@@ -63,14 +95,18 @@ class AudioNotifier extends StateNotifier<MyAudioPalyer> {
     return state.audioPlayer.onPositionChanged;
   }
 
-  void isPlay() async {
-    Duration? duration = await state.audioPlayer.getDuration();
-    Duration? progress = await state.audioPlayer.getCurrentPosition();
-    duration = duration ?? Duration.zero;
-    progress = progress ?? Duration.zero;
+  void updateSongList(List<SongModel> model) {
+    state = state.copyWith(listsongModel: model);
+  }
 
+  void isPlay() async {
     if (state.isPlay) {
       await state.audioPlayer.pause();
+
+      Duration? duration = await state.audioPlayer.getDuration();
+      Duration? progress = await state.audioPlayer.getCurrentPosition();
+      duration = duration ?? Duration.zero;
+      progress = progress ?? Duration.zero;
       state = state.copyWith(
         isPlay: false,
         audioDuration: duration,
@@ -78,12 +114,43 @@ class AudioNotifier extends StateNotifier<MyAudioPalyer> {
       );
     } else {
       await state.audioPlayer.play(state.source);
+
+      Duration? duration = await state.audioPlayer.getDuration();
+      Duration? progress = await state.audioPlayer.getCurrentPosition();
+      duration = duration ?? Duration.zero;
+      progress = progress ?? Duration.zero;
       state = state.copyWith(
         isPlay: true,
         audioDuration: duration,
         progress: progress,
       );
     }
+  }
+
+  void changeSong({
+    required String url,
+    required String uploadedBy,
+    required String imageUrl,
+    required String title,
+    required String artist,
+  }) async {
+    state.audioPlayer.dispose();
+    state = MyAudioPalyer(
+      audioPlayer: AudioPlayer(),
+      isPlay: false,
+      source: AssetSource('music/dilHareya.mp3'),
+      audioDuration: Duration.zero,
+      progress: Duration.zero,
+      url: url,
+      imgUrl: imageUrl,
+      title: title,
+      uploadedby: uploadedBy,
+      artist: artist,
+      listsongModel: state.listsongModel,
+    );
+    await state.audioPlayer.play(state.source);
+    Duration dur = await state.audioPlayer.getDuration() ?? Duration.zero;
+    state = state.copyWith(isPlay: true, audioDuration: dur);
   }
 }
 
@@ -95,15 +162,13 @@ String url;
   String uploadedby;
   String artist;
 
-
   state of AudioPlayer :
   bool isPlay;
   stream duration 
   stream position
   UrlSource 
   AudioPlayer() instance 
-
-  */
+*/
 
 
 
