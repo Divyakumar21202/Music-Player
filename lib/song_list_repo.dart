@@ -65,7 +65,7 @@ class SongListNotifier extends StateNotifier<AsyncValue<List<SongModel>>> {
         return songList;
       }
     } catch (e) {
-      print(e.toString());
+      throw(e.toString());
     }
     return songList;
   }

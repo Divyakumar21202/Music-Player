@@ -10,9 +10,9 @@ class MusicStreamerWidget extends StatefulWidget {
 }
 
 class _MusicStreamerWidgetState extends State<MusicStreamerWidget> {
-   bool isPlay = false;
-  AudioPlayer _musicPlayer = AudioPlayer();
-  AssetSource assetSource = AssetSource('music/mmusic.mp3');
+  bool isPlay = false;
+  final AudioPlayer _musicPlayer = AudioPlayer();
+  final AssetSource assetSource = AssetSource('music/mmusic.mp3');
 
   @override
   void initState() {
@@ -22,14 +22,11 @@ class _MusicStreamerWidgetState extends State<MusicStreamerWidget> {
 
   void getMax() async {
     await _musicPlayer.setSource(assetSource);
-    print('source Setted');
     _musicPlayer.getDuration().then((value) {
-      if (value == null) {
-        print('value is null');
+      if (value != null) {
+        max = value.inSeconds.toDouble();
+        setState(() {});
       }
-      print(value!.inSeconds.toString());
-      max = value.inSeconds.toDouble();
-      setState(() {});
     });
   }
 
@@ -59,7 +56,6 @@ class _MusicStreamerWidgetState extends State<MusicStreamerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    
     return StreamBuilder(
         stream: _musicPlayer.onPositionChanged,
         builder: (context, snapshot) {
